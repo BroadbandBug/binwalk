@@ -63,6 +63,8 @@ pub fn run_binwalk(signature_filter: &str, file_name: &str) -> AnalysisResults {
         None,
         None,
         false,
+        false,
+        usize::MAX,
     )
     .expect("Binwalk initialization failed");
 

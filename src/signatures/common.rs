@@ -23,6 +23,15 @@ pub struct SignatureError;
 /// They must return either a SignatureResult struct if validation succeeds, or a SignatureError if validation fails.
 pub type SignatureParser = fn(&[u8], usize) -> Result<SignatureResult, SignatureError>;
 
+/// Simple parser for simple magic matches
+pub fn simple_parser(_file_data: &[u8], offset: usize) -> Result<SignatureResult, SignatureError> {
+    Ok(SignatureResult {
+        offset,
+        confidence: CONFIDENCE_HIGH,
+        ..Default::default()
+    })
+}
+
 /// Describes a valid identified file signature
 ///
 /// ## Construction
@@ -82,4 +91,19 @@ pub struct Signature {
     pub parser: SignatureParser,
     /// Specifies the extractor to use when extracting this file type
     pub extractor: Option<extractors::common::Extractor>,
+}
+
+impl Default for Signature {
+    fn default() -> Self {
+        Self {
+            name: "".to_string(),
+            short: false,
+            magic: vec![],
+            magic_offset: 0,
+            description: "".to_string(),
+            always_display: false,
+            parser: simple_parser,
+            extractor: None,
+        }
+    }
 }
