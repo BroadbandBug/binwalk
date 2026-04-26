@@ -1229,6 +1229,61 @@ pub fn patterns() -> Vec<signatures::common::Signature> {
             description: signatures::hashes::MD5_DESCRIPTION.to_string(),
             extractor: None,
         },
+        // Mach-O
+        signatures::common::Signature {
+            name: "macho".to_string(),
+            short: false,
+            magic_offset: 0,
+            always_display: false,
+            magic: signatures::macho::macho_magic(),
+            parser: signatures::macho::macho_parser,
+            description: signatures::macho::DESCRIPTION.to_string(),
+            extractor: None,
+        },
+        // TIFF
+        signatures::common::Signature {
+            name: "tiff".to_string(),
+            short: false,
+            magic_offset: 0,
+            always_display: false,
+            magic: signatures::tiff::tiff_magic(),
+            parser: signatures::tiff::tiff_parser,
+            description: signatures::tiff::DESCRIPTION.to_string(),
+            extractor: None,
+        },
+        // HFS
+        signatures::common::Signature {
+            name: "hfs".to_string(),
+            short: false,
+            magic_offset: 1024,
+            always_display: false,
+            magic: signatures::hfs::hfs_magic(),
+            parser: signatures::hfs::hfs_parser,
+            description: signatures::hfs::DESCRIPTION.to_string(),
+            extractor: None,
+        },
+        // XFS
+        signatures::common::Signature {
+            name: "xfs".to_string(),
+            short: false,
+            magic_offset: 0,
+            always_display: false,
+            magic: signatures::xfs::xfs_magic(),
+            parser: signatures::xfs::xfs_parser,
+            description: signatures::xfs::DESCRIPTION.to_string(),
+            extractor: None,
+        },
+        // Minix
+        signatures::common::Signature {
+            name: "minix".to_string(),
+            short: false,
+            magic_offset: 0,
+            always_display: false,
+            magic: signatures::minix::minix_magic(),
+            parser: signatures::minix::minix_parser,
+            description: signatures::minix::DESCRIPTION.to_string(),
+            extractor: None,
+        },
     ];
 
     binary_signatures

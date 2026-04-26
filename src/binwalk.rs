@@ -81,6 +81,10 @@ pub struct Binwalk {
     pub pattern_signature_table: HashMap<usize, signatures::common::Signature>,
     /// Maps signatures to their corresponding extractors
     pub extractor_lookup_table: HashMap<String, Option<extractors::common::Extractor>>,
+    /// Delete carved files after extraction
+    pub rm_carved_files: bool,
+    /// Maximum Matryoshka recursion depth
+    pub max_recursion_depth: usize,
 }
 
 impl Binwalk {
@@ -96,7 +100,7 @@ impl Binwalk {
     /// ```
     #[allow(dead_code)]
     pub fn new() -> Binwalk {
-        Binwalk::configure(None, None, None, None, None, false).unwrap()
+        Binwalk::configure(None, None, None, None, None, false, false, 0).unwrap()
     }
 
     /// Create a new Binwalk instance.
@@ -135,8 +139,12 @@ impl Binwalk {
         exclude: Option<Vec<String>>,
         signatures: Option<Vec<signatures::common::Signature>>,
         full_search: bool,
+        rm_carved_files: bool,
+        max_recursion_depth: usize,
     ) -> Result<Binwalk, BinwalkError> {
         let mut new_instance = Binwalk {
+            rm_carved_files,
+            max_recursion_depth,
             ..Default::default()
         };
 
@@ -294,6 +302,10 @@ impl Binwalk {
                         // Auto populate some signature result fields
                         signature_result_auto_populate(&mut signature_result, signature);
 
+                        if signature_result.description.is_empty() {
+                            signature_result.description = signature.description.clone();
+                        }
+
                         // Add this signature to the file map
                         file_map.push(signature_result.clone());
                         info!(
@@ -373,6 +385,10 @@ impl Binwalk {
                 if let Ok(mut signature_result) = (signature.parser)(file_data, magic_offset) {
                     // Calculate the end of this signature's data
                     let signature_end_offset = signature_result.offset + signature_result.size;
+
+                    if signature_result.description.is_empty() {
+                        signature_result.description = signature.description.clone();
+                    }
 
                     // Sanity check the reported offset and size vs file size
                     if signature_end_offset > available_data {
@@ -625,8 +641,13 @@ impl Binwalk {
                 None => continue,
                 Some(_) => {
                     // Run an extraction for this signature
-                    let mut extraction_result =
-                        extractors::common::execute(file_data, &file_path, signature, &extractor);
+                    let mut extraction_result = extractors::common::execute(
+                        file_data,
+                        &file_path,
+                        signature,
+                        &extractor,
+                        self.rm_carved_files,
+                    );
 
                     if !extraction_result.success {
                         debug!(
@@ -660,6 +681,7 @@ impl Binwalk {
                                 &file_path,
                                 &new_signature,
                                 &extractor,
+                                self.rm_carved_files,
                             );
                         }
                     }

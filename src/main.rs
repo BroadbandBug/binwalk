@@ -93,14 +93,55 @@ fn main() -> ExitCode {
         output_directory = Some(cliargs.directory);
     }
 
+    // User-defined signatures
+    let mut extra_signatures = vec![];
+
+    // Handle --grep
+    if let Some(grep_str) = cliargs.grep {
+        extra_signatures.push(signatures::common::Signature {
+            name: "grep".to_string(),
+            description: format!("Grep: \"{grep_str}\""),
+            magic: vec![grep_str.into_bytes()],
+            parser: |_, offset| {
+                Ok(signatures::common::SignatureResult {
+                    offset,
+                    confidence: signatures::common::CONFIDENCE_HIGH,
+                    ..Default::default()
+                })
+            },
+            ..Default::default()
+        });
+    }
+
+    // Handle --raw
+    if let Some(raw_str) = cliargs.raw {
+        if let Ok(raw_bytes) = hex::decode(raw_str.replace(" ", "")) {
+            extra_signatures.push(signatures::common::Signature {
+                name: "raw".to_string(),
+                description: format!("Raw: \"{raw_str}\""),
+                magic: vec![raw_bytes],
+                parser: |_, offset| {
+                    Ok(signatures::common::SignatureResult {
+                        offset,
+                        confidence: signatures::common::CONFIDENCE_HIGH,
+                        ..Default::default()
+                    })
+                },
+                ..Default::default()
+            });
+        }
+    }
+
     // Initialize binwalk
     let binwalker = match binwalk::Binwalk::configure(
         cliargs.file_name,
         output_directory,
         cliargs.include,
         cliargs.exclude,
-        None,
+        Some(extra_signatures),
         cliargs.search_all,
+        cliargs.rm,
+        cliargs.depth.unwrap_or(usize::MAX),
     ) {
         Err(e) => {
             error!("Binwalk initialization failed: {}", e.message);
@@ -148,8 +189,11 @@ fn main() -> ExitCode {
         binwalker.base_target_file
     );
 
-    // Queue the initial file path
-    target_files.insert(target_files.len(), binwalker.base_target_file.clone());
+    // Queue the initial file path with a recursion depth of 0
+    target_files.insert(
+        target_files.len(),
+        (binwalker.base_target_file.clone(), 0usize),
+    );
 
     /*
      * Main loop.
@@ -158,8 +202,8 @@ fn main() -> ExitCode {
     while !target_files.is_empty() || workers.active_count() > 0 {
         // If there are files waiting to be analyzed and there is at least one free thread in the pool
         if !target_files.is_empty() && workers.active_count() < workers.max_count() {
-            // Get the next file path from the target_files queue
-            let target_file = target_files
+            // Get the next file path and its recursion depth from the target_files queue
+            let (target_file, recursion_depth) = target_files
                 .pop_front()
                 .expect("Failed to retrieve next file from the queue");
 
@@ -168,9 +212,12 @@ fn main() -> ExitCode {
                 &workers,
                 binwalker.clone(),
                 target_file,
+                recursion_depth,
                 cliargs.stdin && file_count == 0,
                 cliargs.extract,
                 cliargs.carve,
+                cliargs.offset,
+                cliargs.length,
                 worker_tx.clone(),
             );
         }
@@ -193,7 +240,7 @@ fn main() -> ExitCode {
         }
 
         // Get response from a worker thread, if any
-        if let Ok(results) = worker_rx.try_recv() {
+        if let Ok((results, recursion_depth)) = worker_rx.try_recv() {
             // Keep a tally of how many files have been analyzed
             file_count += 1;
 
@@ -212,14 +259,20 @@ fn main() -> ExitCode {
             }
 
             // If running recursively, add extraction results to list of files to analyze
-            if cliargs.matryoshka {
+            if cliargs.matryoshka && recursion_depth < binwalker.max_recursion_depth {
                 for (_signature_id, extraction_result) in results.extractions.into_iter() {
                     if !extraction_result.do_not_recurse {
                         for file_path in extractors::common::get_extracted_files(
                             &extraction_result.output_directory,
                         ) {
-                            debug!("Queuing {file_path} for analysis");
-                            target_files.insert(target_files.len(), file_path.clone());
+                            debug!(
+                                "Queuing {file_path} for analysis at depth {}",
+                                recursion_depth + 1
+                            );
+                            target_files.insert(
+                                target_files.len(),
+                                (file_path.clone(), recursion_depth + 1),
+                            );
                         }
                     }
                 }
@@ -279,14 +332,17 @@ fn spawn_worker(
     pool: &ThreadPool,
     bw: binwalk::Binwalk,
     target_file: String,
+    recursion_depth: usize,
     stdin: bool,
     do_extraction: bool,
     do_carve: bool,
-    worker_tx: mpsc::Sender<AnalysisResults>,
+    offset: Option<usize>,
+    length: Option<usize>,
+    worker_tx: mpsc::Sender<(AnalysisResults, usize)>,
 ) {
     pool.execute(move || {
         // Read in file data
-        let file_data = match common::read_input(&target_file, stdin) {
+        let full_file_data = match common::read_input(&target_file, stdin) {
             Err(_) => {
                 error!("Failed to read {target_file} data");
                 b"".to_vec()
@@ -294,17 +350,31 @@ fn spawn_worker(
             Ok(data) => data,
         };
 
+        // Apply offset and length if specified
+        let (start_index, end_index) =
+            common::get_data_range(full_file_data.len(), offset, length);
+
+        let display_offset = start_index;
+        let file_slice = &full_file_data[start_index..end_index];
+
         // Analyze target file, with extraction, if specified
-        let results = bw.analyze_buf(&file_data, &target_file, do_extraction);
+        let mut results = bw.analyze_buf(file_slice, &target_file, do_extraction);
+
+        // Adjust offsets for display if an offset was specified
+        if display_offset > 0 {
+            for result in &mut results.file_map {
+                result.offset += display_offset;
+            }
+        }
 
         // If data carving was requested as part of extraction, carve analysis results to disk
         if do_carve {
-            let carve_count = carve_file_map(&file_data, &results);
+            let carve_count = carve_file_map(file_slice, &results);
             info!("Carved {carve_count} data blocks to disk from {target_file}");
         }
 
         // Report file results back to main thread
-        if let Err(e) = worker_tx.send(results) {
+        if let Err(e) = worker_tx.send((results, recursion_depth)) {
             panic!(
                 "Worker thread for {target_file} failed to send results back to main thread: {e}"
             );

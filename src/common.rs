@@ -112,6 +112,34 @@ pub fn epoch_to_string(epoch_timestamp: u32) -> String {
     }
 }
 
+/// Returns the start and end indices for a given offset and length, bounded by the data size.
+pub fn get_data_range(
+    data_len: usize,
+    offset: Option<usize>,
+    length: Option<usize>,
+) -> (usize, usize) {
+    let mut start_index = 0;
+    let mut end_index = data_len;
+
+    if let Some(o) = offset {
+        if o < data_len {
+            start_index = o;
+        } else {
+            start_index = data_len;
+        }
+    }
+
+    if let Some(l) = length {
+        if start_index + l < data_len {
+            end_index = start_index + l;
+        } else {
+            end_index = data_len;
+        }
+    }
+
+    (start_index, end_index)
+}
+
 /// Get a C-style NULL-terminated string from the provided list of u8 bytes.
 /// Return value does not include the terminating NULL byte.
 fn get_cstring_bytes(raw_data: &[u8]) -> Vec<u8> {

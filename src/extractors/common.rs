@@ -920,6 +920,7 @@ pub fn execute(
     file_path: &str,
     signature: &SignatureResult,
     extractor: &Option<Extractor>,
+    rm: bool,
 ) -> ExtractionResult {
     let mut result = ExtractionResult {
         ..Default::default()
@@ -1009,7 +1010,7 @@ pub fn execute(
         }
 
         // Clean up extractor's output directory if extraction failed
-        if !result.success {
+        if !result.success && rm {
             if let Err(e) = fs::remove_dir_all(&output_directory) {
                 warn!(
                     "Failed to clean up extraction directory {output_directory} after extraction failure: {e}"

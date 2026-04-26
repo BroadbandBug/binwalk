@@ -44,12 +44,28 @@ pub struct CliArgs {
     pub png: Option<String>,
 
     /// Log JSON results to a file ('-' for stdout)
-    #[arg(short, long)]
+    #[arg(short = 'j', long)]
     pub log: Option<String>,
 
     /// Manually specify the number of threads to use
     #[arg(short, long)]
     pub threads: Option<usize>,
+
+    /// Start scan at this file offset
+    #[arg(short = 'o', long)]
+    pub offset: Option<usize>,
+
+    /// Scan only this many bytes
+    #[arg(short = 'l', long)]
+    pub length: Option<usize>,
+
+    /// Limit matryoshka recursion depth
+    #[arg(short = 'd', long)]
+    pub depth: Option<usize>,
+
+    /// Delete carved files after extraction
+    #[arg(short = 'r', long)]
+    pub rm: bool,
 
     /// Do no scan for these signatures
     #[arg(short = 'x', long, value_delimiter = ',', num_args = 1..)]
@@ -59,8 +75,16 @@ pub struct CliArgs {
     #[arg(short = 'y', long, value_delimiter = ',', num_args = 1.., conflicts_with = "exclude")]
     pub include: Option<Vec<String>>,
 
+    /// Scan for a custom string
+    #[arg(short = 'g', long)]
+    pub grep: Option<String>,
+
+    /// Scan for a custom byte sequence
+    #[arg(short = 'R', long)]
+    pub raw: Option<String>,
+
     /// Extract files/folders to a custom directory
-    #[arg(short, long, default_value = "extractions")]
+    #[arg(short = 'C', long, default_value = "extractions")]
     pub directory: String,
 
     /// Path to the file to analyze
