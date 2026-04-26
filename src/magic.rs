@@ -1229,6 +1229,17 @@ pub fn patterns() -> Vec<signatures::common::Signature> {
             description: signatures::hashes::MD5_DESCRIPTION.to_string(),
             extractor: None,
         },
+        // Java class
+        signatures::common::Signature {
+            name: "java".to_string(),
+            short: false,
+            magic_offset: 0,
+            always_display: false,
+            magic: signatures::java::java_magic(),
+            parser: signatures::java::java_parser,
+            description: signatures::java::DESCRIPTION.to_string(),
+            extractor: None,
+        },
         // Mach-O
         signatures::common::Signature {
             name: "macho".to_string(),
@@ -1282,6 +1293,105 @@ pub fn patterns() -> Vec<signatures::common::Signature> {
             magic: signatures::minix::minix_magic(),
             parser: signatures::minix::minix_parser,
             description: signatures::minix::DESCRIPTION.to_string(),
+            extractor: None,
+        },
+        // JFS
+        signatures::common::Signature {
+            name: "jfs".to_string(),
+            short: false,
+            magic_offset: 0,
+            always_display: false,
+            magic: signatures::jfs::jfs_magic(),
+            parser: signatures::jfs::jfs_parser,
+            description: signatures::jfs::DESCRIPTION.to_string(),
+            extractor: None,
+        },
+        // ReiserFS
+        signatures::common::Signature {
+            name: "reiserfs".to_string(),
+            short: false,
+            magic_offset: 0,
+            always_display: false,
+            magic: signatures::reiserfs::reiserfs_magic(),
+            parser: signatures::reiserfs::reiserfs_parser,
+            description: signatures::reiserfs::DESCRIPTION.to_string(),
+            extractor: None,
+        },
+        // U-Boot script
+        signatures::common::Signature {
+            name: "uboot_script".to_string(),
+            short: false,
+            magic_offset: 0,
+            always_display: false,
+            magic: signatures::uboot_script::uboot_script_magic(),
+            parser: signatures::uboot_script::uboot_script_parser,
+            description: signatures::uboot_script::DESCRIPTION.to_string(),
+            extractor: None,
+        },
+        // WebP
+        signatures::common::Signature {
+            name: "webp".to_string(),
+            short: false,
+            magic_offset: 0,
+            always_display: false,
+            magic: signatures::webp::webp_magic(),
+            parser: signatures::webp::webp_parser,
+            description: signatures::webp::DESCRIPTION.to_string(),
+            extractor: None,
+        },
+        // Pcap
+        signatures::common::Signature {
+            name: "pcap".to_string(),
+            short: false,
+            magic_offset: 0,
+            always_display: false,
+            magic: signatures::pcap::pcap_magic(),
+            parser: signatures::pcap::pcap_parser,
+            description: signatures::pcap::PCAP_DESCRIPTION.to_string(),
+            extractor: None,
+        },
+        // F2FS
+        signatures::common::Signature {
+            name: "f2fs".to_string(),
+            short: false,
+            magic_offset: 0,
+            always_display: false,
+            magic: signatures::f2fs::f2fs_magic(),
+            parser: signatures::f2fs::f2fs_parser,
+            description: signatures::f2fs::DESCRIPTION.to_string(),
+            extractor: None,
+        },
+        // ZFS
+        signatures::common::Signature {
+            name: "zfs".to_string(),
+            short: false,
+            magic_offset: 0,
+            always_display: false,
+            magic: signatures::zfs::zfs_magic(),
+            parser: signatures::zfs::zfs_parser,
+            description: signatures::zfs::DESCRIPTION.to_string(),
+            extractor: None,
+        },
+        // Dalvik DEX
+        signatures::common::Signature {
+            name: "dex".to_string(),
+            short: false,
+            magic_offset: 0,
+            always_display: false,
+            magic: signatures::dex::dex_magic(),
+            parser: signatures::dex::dex_parser,
+            description: signatures::dex::DESCRIPTION.to_string(),
+            extractor: None,
+        },
+        // JieLi
+        signatures::common::Signature {
+            name: "jieli".to_string(),
+            short: false,
+            magic_offset: 0,
+            always_display: false,
+            magic: signatures::jieli::jieli_magic(),
+            parser: signatures::jieli::jieli_parser,
+            description: signatures::jieli::DESCRIPTION.to_string(),
             extractor: None,
         },
     ];
