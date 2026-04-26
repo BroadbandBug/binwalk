@@ -1229,6 +1229,17 @@ pub fn patterns() -> Vec<signatures::common::Signature> {
             description: signatures::hashes::MD5_DESCRIPTION.to_string(),
             extractor: None,
         },
+        // Barebox
+        signatures::common::Signature {
+            name: "barebox".to_string(),
+            short: false,
+            magic_offset: 0,
+            always_display: false,
+            magic: signatures::barebox::barebox_magic(),
+            parser: signatures::barebox::barebox_parser,
+            description: signatures::barebox::DESCRIPTION.to_string(),
+            extractor: None,
+        },
         // Java class
         signatures::common::Signature {
             name: "java".to_string(),
@@ -1317,6 +1328,17 @@ pub fn patterns() -> Vec<signatures::common::Signature> {
             description: signatures::reiserfs::DESCRIPTION.to_string(),
             extractor: None,
         },
+        // Realtek
+        signatures::common::Signature {
+            name: "realtek".to_string(),
+            short: true,
+            magic_offset: 0,
+            always_display: false,
+            magic: signatures::realtek::realtek_magic(),
+            parser: signatures::realtek::realtek_parser,
+            description: signatures::realtek::DESCRIPTION.to_string(),
+            extractor: None,
+        },
         // U-Boot script
         signatures::common::Signature {
             name: "uboot_script".to_string(),
@@ -1350,6 +1372,39 @@ pub fn patterns() -> Vec<signatures::common::Signature> {
             description: signatures::pcap::PCAP_DESCRIPTION.to_string(),
             extractor: None,
         },
+        // CSYS
+        signatures::common::Signature {
+            name: "csys".to_string(),
+            short: false,
+            magic_offset: 0,
+            always_display: false,
+            magic: signatures::csys::csys_magic(),
+            parser: signatures::csys::csys_parser,
+            description: signatures::csys::DESCRIPTION.to_string(),
+            extractor: None,
+        },
+        // WRGG
+        signatures::common::Signature {
+            name: "wrgg".to_string(),
+            short: false,
+            magic_offset: 0,
+            always_display: false,
+            magic: signatures::wrgg::wrgg_magic(),
+            parser: signatures::wrgg::wrgg_parser,
+            description: signatures::wrgg::DESCRIPTION.to_string(),
+            extractor: None,
+        },
+        // AIH0
+        signatures::common::Signature {
+            name: "aih0".to_string(),
+            short: false,
+            magic_offset: 0,
+            always_display: false,
+            magic: signatures::aih0::aih0_magic(),
+            parser: signatures::aih0::aih0_parser,
+            description: signatures::aih0::DESCRIPTION.to_string(),
+            extractor: None,
+        },
         // F2FS
         signatures::common::Signature {
             name: "f2fs".to_string(),
@@ -1372,6 +1427,28 @@ pub fn patterns() -> Vec<signatures::common::Signature> {
             description: signatures::zfs::DESCRIPTION.to_string(),
             extractor: None,
         },
+        // ZynOS
+        signatures::common::Signature {
+            name: "zynos".to_string(),
+            short: false,
+            magic_offset: 0,
+            always_display: false,
+            magic: signatures::zynos::zynos_magic(),
+            parser: signatures::zynos::zynos_parser,
+            description: signatures::zynos::DESCRIPTION.to_string(),
+            extractor: None,
+        },
+        // ZBOOT
+        signatures::common::Signature {
+            name: "zboot".to_string(),
+            short: false,
+            magic_offset: 0,
+            always_display: false,
+            magic: signatures::zboot::zboot_magic(),
+            parser: signatures::zboot::zboot_parser,
+            description: signatures::zboot::DESCRIPTION.to_string(),
+            extractor: None,
+        },
         // Dalvik DEX
         signatures::common::Signature {
             name: "dex".to_string(),
@@ -1392,6 +1469,39 @@ pub fn patterns() -> Vec<signatures::common::Signature> {
             magic: signatures::jieli::jieli_magic(),
             parser: signatures::jieli::jieli_parser,
             description: signatures::jieli::DESCRIPTION.to_string(),
+            extractor: None,
+        },
+        // Broadcom
+        signatures::common::Signature {
+            name: "broadcom".to_string(),
+            short: false,
+            magic_offset: 0,
+            always_display: false,
+            magic: signatures::broadcom::broadcom_magic(),
+            parser: signatures::broadcom::broadcom_parser,
+            description: signatures::broadcom::DESCRIPTION.to_string(),
+            extractor: None,
+        },
+        // MikroTik NPK
+        signatures::common::Signature {
+            name: "npk".to_string(),
+            short: false,
+            magic_offset: 0,
+            always_display: false,
+            magic: signatures::npk::npk_magic(),
+            parser: signatures::npk::npk_parser,
+            description: signatures::npk::DESCRIPTION.to_string(),
+            extractor: None,
+        },
+        // Ubiquiti
+        signatures::common::Signature {
+            name: "ubnt".to_string(),
+            short: false,
+            magic_offset: 0,
+            always_display: false,
+            magic: signatures::ubnt::ubnt_magic(),
+            parser: signatures::ubnt::ubnt_parser,
+            description: signatures::ubnt::DESCRIPTION.to_string(),
             extractor: None,
         },
     ];
